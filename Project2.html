@@ -13,7 +13,7 @@
         <div id='react-container'></div>
         <script type="text/babel">
 
-            var StateEnum = {
+            var StateEnum = { //The game's possible states
                 PLAYING : 0, 
                 NOTPLAYING : 1, 
                 WAITING : 2
@@ -24,13 +24,16 @@
             var myPattern = [];
             var gamePattern = [];
 
-            function addToArray(num, arr) {
-                var newPattern = arr;
+            function addToArray(num, arr) { //Used to add numbers to each pattern array
+                let newPattern = arr;
                 newPattern.push(num);
                 arr = newPattern;
             }
 
             var PatternSelection = React.createClass({
+                /* The PatternSelection class is the button that the user clicks to make their guess about the pattern. It is made of a 
+                simple button with an onClick function and text in it (id). */
+
                 getInitialState() {
                     return {
                         id: this.props.id
@@ -52,24 +55,18 @@
             })
 
             var Game = React.createClass({
-                getInitialState() {
+                /* The Game class is what is created in the ReactDOM.render at the bottom of the file. It is added to the div with the id of 
+                'react-container'. In the Game class, there are multiple PatternSelection classes made. */
+
+                getInitialState() { //Sets up the classes states
                     return {opacity: 0,
                             shownPattern: 'Test',
                             transition: 'opacity .50s linear',
                             leftButtonText: 'Start',
                             num: 0}
                 }, 
-                switchState() {
-                    playingGame = !playingGame;
-                },
-                inputChoice() {
-                    alert("TEST");
-                },
-                showGamePattern() {
-                    printPattern(gamePattern);
-                },
-                comparePatterns() {
-                    for(var i = 0; i < myPattern.length; i++) {
+                comparePatterns() { //Compares the game's pattern with the player's pattern each time the player makes a choice
+                    for(let i = 0; i < myPattern.length; i++) {
                         if(myPattern[i] !== gamePattern[i]) {
                             alert('You lost with a score of: ' + (gamePattern.length-1));
                             this.resetGame();
@@ -85,13 +82,12 @@
                         this.displayPattern();
                     }
                 },
-                resetGame() {
+                resetGame() { //Resets the game's pattern as well as the player's entered pattern
                     myPattern = [];
                     this.resetGamePattern();
                 },
-                mainButtonAction() {
+                mainButtonAction() { //The start and reset button behavior for the game
                     if(currentState == StateEnum.NOTPLAYING) {
-                        //this.setState({opacity: 0});
                         this.resetGame();
                         this.setState({leftButtonText: 'Reset'});
                         currentState = StateEnum.PLAYING;
@@ -102,7 +98,7 @@
                         currentState = StateEnum.NOTPLAYING;
                     }
                 },
-                displayPattern() {
+                displayPattern() { //Shows the pattern to the user (makes the numbers fade in and out one after the other)
                     currentState = StateEnum.WAITING;
                     const delayInSeconds = 1;
                     
@@ -129,10 +125,10 @@
                 randomBetween(x, y) { //Inclusive
                     return (((x-1) + Math.ceil(Math.random() * (y-(x-1)))));
                 },
-                resetGamePattern() {
+                resetGamePattern() { //Clears the pattern array and initializes it again
                     gamePattern = [];
                     if(this.props.patternCount) {
-                        for(var i = 0; i < this.props.patternCount; i++) {
+                        for(let i = 0; i < this.props.patternCount; i++) {
                             addToArray(this.randomBetween(0, this.props.optionCount-1), gamePattern);
                         }
                     }
@@ -140,11 +136,10 @@
                 componentWillMount() { //Called before render
                     this.resetGamePattern();
                 },
-                render() {
+                render() { //What is shown on the screen
                     return (
                         <div>
                         <div className="outer">
-                            
                             <div className="title">
                                 Memory Game
                             </div>
@@ -172,7 +167,7 @@
             })
             
             ReactDOM.render(<Game patternCount={1} optionCount={4}></Game>, 
-                document.getElementById('react-container'));
+                            document.getElementById('react-container'));
         </script>
 
     </body>
