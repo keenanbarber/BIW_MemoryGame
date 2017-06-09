@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://fb.me/react-15.2.1.js"></script>
+        <script src="https://fb.me/react-dom-15.2.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="style.css">
+
+        <title>Component Lifecycle</title>
+    </head>
+    <body>
+        <div id='react-container'></div>
+        <script type="text/babel">
+
+            var StateEnum = {
+                PLAYING : 0, 
+                NOTPLAYING : 1, 
+                WAITING : 2
+            }
+
+            var currentState = StateEnum.NOTPLAYING;
+
+            var myPattern = [];
+            var gamePattern = [];
+
+            function addToArray(num, arr) {
+                var newPattern = arr;
+                newPattern.push(num);
+                arr = newPattern;
+            }
+
+            var PatternSelection = React.createClass({
+                getInitialState() {
+                    return {
+                        id: this.props.id
+                    }
+                },
+                selectOption() {
+                    if(currentState == StateEnum.PLAYING) {
+                        addToArray(this.state.id, myPattern);
+                        //printPattern(myPattern)
+                        
+                        this.props.comparePatterns();
+                    }
+                },
+                render() {
+                    return (
+                        <button onClick={this.selectOption} className="buttonStyle">{this.state.id}</button>
+                    )
+                }
+            })
+
+            var Game = React.createClass({
+                getInitialState() {
+                    return {opacity: 0,
+                            shownPattern: 'Test',
+                            transition: 'opacity .50s linear',
+                            leftButtonText: 'Start',
+                            num: 0}
+                }, 
+                switchState() {
+                    playingGame = !playingGame;
+                },
+                inputChoice() {
+                    alert("TEST");
+                },
+                showGamePattern() {
+                    printPattern(gamePattern);
+                },
+                comparePatterns() {
+                    for(var i = 0; i < myPattern.length; i++) {
+                        if(myPattern[i] !== gamePattern[i]) {
+                            alert('You lost with a score of: ' + (gamePattern.length-1));
+                            this.resetGame();
+                            this.setState({leftButtonText: 'Start'});
+                            currentState = StateEnum.NOTPLAYING;
+                            return;
+                        }
+                    }
+                    
+                    if(myPattern.length == gamePattern.length) {
+                        myPattern.length = 0;
+                        addToArray(this.randomBetween(0, this.props.optionCount-1), gamePattern);
+                        this.displayPattern();
+                    }
+                },
+                resetGame() {
+                    myPattern = [];
+                    this.resetGamePattern();
+                },
+                mainButtonAction() {
+                    if(currentState == StateEnum.NOTPLAYING) {
+                        //this.setState({opacity: 0});
+                        this.resetGame();
+                        this.setState({leftButtonText: 'Reset'});
+                        currentState = StateEnum.PLAYING;
+                        this.displayPattern();
+                    }
+                    else if(currentState == StateEnum.PLAYING || currentState == StateEnum.WAITING) {
+                        this.setState({leftButtonText: 'Start'});
+                        currentState = StateEnum.NOTPLAYING;
+                    }
+                },
+                displayPattern() {
+                    currentState = StateEnum.WAITING;
+                    const delayInSeconds = 1;
+                    
+                    let i = 0;
+                    let obj = this;
+                    let func = function() { 
+                                    if(currentState == StateEnum.PLAYING || currentState == StateEnum.WAITING) {
+                                        obj.setState({opacity: 1});
+                                        setTimeout(function() {obj.setState({opacity: 0});}, (delayInSeconds/2) * 1000);
+                                        obj.setState({shownPattern: gamePattern[i]});
+
+                                        i++;
+                                        if(i < gamePattern.length) {
+                                            setTimeout(func, delayInSeconds * 1000);
+                                        }
+                                        else {
+                                            currentState = StateEnum.PLAYING;
+                                        }
+                                    }
+                                }
+                    func()
+
+                },
+                randomBetween(x, y) { //Inclusive
+                    return (((x-1) + Math.ceil(Math.random() * (y-(x-1)))));
+                },
+                resetGamePattern() {
+                    gamePattern = [];
+                    if(this.props.patternCount) {
+                        for(var i = 0; i < this.props.patternCount; i++) {
+                            addToArray(this.randomBetween(0, this.props.optionCount-1), gamePattern);
+                        }
+                    }
+                },
+                componentWillMount() { //Called before render
+                    this.resetGamePattern();
+                },
+                render() {
+                    return (
+                        <div>
+                        <div className="outer">
+                            
+                            <div className="title">
+                                Memory Game
+                            </div>
+                            <div className="outerShownPattern">
+                                <div style={this.state}>
+                                    {this.state.shownPattern}
+                                </div>
+                            </div>
+                            <div className="buttonContainer">
+                                <span className="leftButton">
+                                    <button className="buttonStyle" onClick={this.mainButtonAction}>{this.state.leftButtonText}</button>
+                                </span>
+                                <span className="rightButtons">
+                                    <PatternSelection id={0} comparePatterns={this.comparePatterns}></PatternSelection>
+                                    <PatternSelection id={1} comparePatterns={this.comparePatterns}></PatternSelection>
+                                    <PatternSelection id={2} comparePatterns={this.comparePatterns}></PatternSelection>
+                                    <PatternSelection id={3} comparePatterns={this.comparePatterns}></PatternSelection>
+                                </span>
+                            </div>
+                            
+                        </div>
+                        </div>
+                    )
+                }
+            })
+            
+            ReactDOM.render(<Game patternCount={1} optionCount={4}></Game>, 
+                document.getElementById('react-container'));
+        </script>
+
+    </body>
+</html>
+
+
+
